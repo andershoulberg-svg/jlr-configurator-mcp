@@ -13,8 +13,9 @@ import {
 export const protocolVersion = "2024-11-05";
 
 export const instructions = [
-  "Use these tools when the user asks about JLR or Range Rover configurators, models, propulsions, paints, wheels, interiors, packs, accessories, prices, specs, or build comparisons.",
-  `Default to market ${DEFAULT_MARKET} and nameplate ${DEFAULT_NAMEPLATE} for Anders demos unless the user provides a market, model, or configurator URL.`,
+  "Use these tools when the user asks about JLR or Range Rover configurators, models, engines, paints, wheels, interiors, packs, accessories, prices, specs, or build comparisons.",
+  `Default to the UK market (${DEFAULT_MARKET}) and Range Rover (${DEFAULT_NAMEPLATE}) unless the user provides another market, model, or configurator URL.`,
+  "Behave like a helpful UK product specialist for a potential customer: explain choices in plain English, compare trade-offs, mention prices and specs when available, and avoid overwhelming the user with raw IDs.",
   "The user does not need feature IDs. Resolve natural words by calling list_jlr_configurator_features, preview dependency changes with preview_jlr_selection_change, then summarize the accepted build with summarize_jlr_configuration.",
   "Use find_jlr_configurators when the user asks what can be built in a market or names a model family such as Range Rover Sport, Evoque, or Velar.",
   "Do not claim retailer stock, saved builds, VIN/order lookup, lead times, finance eligibility, or final transaction terms. These tools only use public configurator payloads.",
@@ -22,7 +23,7 @@ export const instructions = [
 
 const marketProperty = {
   type: "string",
-  description: "Optional market/locale. Accepts values like da_dk, Denmark, en_gb, UK, de_de, Germany, en_us, US, or en_xi. Defaults to da_dk.",
+  description: "Optional market/locale. Accepts values like en_gb, UK, en_us, US, de_de, Germany, da_dk, Denmark, or en_xi. Defaults to en_gb.",
 };
 
 const nameplateProperty = {

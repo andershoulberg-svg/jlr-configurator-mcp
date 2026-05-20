@@ -1,7 +1,7 @@
-const DEFAULT_MARKET = "da_dk";
+const DEFAULT_MARKET = "en_gb";
 const DEFAULT_NAMEPLATE = "l460";
 const DEFAULT_SOURCE_URL =
-  "https://www.rangerover.com/lr/da_dk/l460/ipr/personalise/";
+  "https://www.rangerover.com/lr/en_gb/l460/ipr/personalise/";
 
 const RULES_BASE_URL = "https://rules.config.landrover.com";
 const CONFIGURATOR_HOST = "https://www.rangerover.com";
@@ -1096,4 +1096,3 @@ function removeEmpty(object) {
     })
   );
 }
-

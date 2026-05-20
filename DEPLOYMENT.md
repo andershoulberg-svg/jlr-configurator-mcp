@@ -41,7 +41,7 @@ Replace `<host>` with the Render URL.
 ```powershell
 $env:MCP_SERVER_URL = "https://<host>/mcp"
 $env:MCP_TOOL_NAME = "summarize_jlr_configuration"
-$env:MCP_TOOL_ARGUMENTS_JSON = '{"market":"da_dk","nameplate":"l460"}'
+$env:MCP_TOOL_ARGUMENTS_JSON = '{"market":"en_gb","nameplate":"l460"}'
 node scripts/smoke-http-mcp.mjs
 ```
 
@@ -50,7 +50,7 @@ Expected:
 - `/health` returns `ok: true`
 - `initialize` returns `jlr-configurator-mcp`
 - `tools/list` returns 7 tools
-- `summarize_jlr_configuration` returns a Danish Range Rover summary with a formatted gross price
+- `summarize_jlr_configuration` returns a UK Range Rover summary with a formatted gross price
 
 ## 4. Connect In ChatGPT Developer Mode
 
@@ -67,11 +67,11 @@ Based on OpenAI Developer Mode docs:
 Good test prompts:
 
 ```text
-Use the JLR configurator MCP only. Find Danish Range Rover configurators.
+Use the JLR configurator MCP only. Find UK Range Rover configurators.
 ```
 
 ```text
-Use the JLR configurator MCP only. Summarize the Danish Range Rover default build with price.
+Use the JLR configurator MCP only. Summarize the UK Range Rover default build with price.
 ```
 
 ```text
@@ -94,4 +94,3 @@ Before wider colleague/client sharing:
 - Add a public landing/health page explaining that the server is read-only.
 - Add deployment monitoring and request logs without personal data.
 - Keep rate limiting enabled.
-

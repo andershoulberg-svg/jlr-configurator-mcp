@@ -4,8 +4,8 @@ Client-demo MCP server for public JLR/Range Rover configurator payloads.
 
 It can act like a market-aware product specialist in ChatGPT:
 
-- Find current public configurators for Denmark, UK, Germany, US and international markets.
-- Resolve shorthand URLs such as `https://www.rangerover.com/lr/da_dk/l460/ipr/personalise/` to the current expanded vehicle/model-year/version URL.
+- Find current public configurators for the UK, US, Germany, Denmark and international markets.
+- Resolve shorthand URLs such as `https://www.rangerover.com/lr/en_gb/l460/ipr/personalise/` to the current expanded vehicle/model-year/version URL.
 - Search features by natural terms such as `Santorini`, `Comfort Pack`, `P460e`, `22 inch`, or `pet pack`.
 - Summarize builds with market-aware prices where the public payload exposes them.
 - Preview dependency changes before selecting a feature.
@@ -45,7 +45,7 @@ Known supported nameplates:
 - `l551` Range Rover Evoque
 - `l560` Range Rover Velar
 
-Default demo market is `da_dk`.
+Default demo market is `en_gb` for a UK customer experience.
 
 ## Run Locally
 
@@ -64,7 +64,7 @@ In another terminal:
 $env:MCP_SERVER_URL = "http://127.0.0.1:3000/mcp"
 $env:MCP_AUTH_TOKEN = "local-dev-token"
 $env:MCP_TOOL_NAME = "summarize_jlr_configuration"
-$env:MCP_TOOL_ARGUMENTS_JSON = '{"market":"da_dk","nameplate":"l460"}'
+$env:MCP_TOOL_ARGUMENTS_JSON = '{"market":"en_gb","nameplate":"l460"}'
 node scripts/smoke-http-mcp.mjs
 ```
 
@@ -76,8 +76,8 @@ node src/index.js
 
 ## Example Natural Prompts
 
-- "Find the Danish Range Rover configurators."
-- "Summarize the Danish Range Rover default build with price."
+- "Find the UK Range Rover configurators."
+- "Summarize the UK Range Rover default build with price."
 - "Find Santorini Black and tell me the feature ID."
 - "What changes if I add Comfort Pack to a Range Rover HSE D300?"
 - "Compare Range Rover HSE D300 against SV."
@@ -95,4 +95,3 @@ MCP_RATE_LIMIT_PER_MINUTE=60
 ```
 
 Do not expose a public unauthenticated endpoint unless it is a short-lived diagnostic.
-

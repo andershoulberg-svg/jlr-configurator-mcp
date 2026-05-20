@@ -1,7 +1,7 @@
 const serverUrl = process.env.MCP_SERVER_URL || "http://127.0.0.1:3000/mcp";
 const token = process.env.MCP_AUTH_TOKEN || "";
 const toolName = process.env.MCP_TOOL_NAME || "summarize_jlr_configuration";
-const toolArguments = JSON.parse(process.env.MCP_TOOL_ARGUMENTS_JSON || "{\"market\":\"da_dk\",\"nameplate\":\"l460\"}");
+const toolArguments = JSON.parse(process.env.MCP_TOOL_ARGUMENTS_JSON || "{\"market\":\"en_gb\",\"nameplate\":\"l460\"}");
 
 const headers = {
   "content-type": "application/json",
