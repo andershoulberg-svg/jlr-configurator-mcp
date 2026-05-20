@@ -6,7 +6,14 @@ const requestLog = new Map();
 export function startHttpServer(config) {
   const server = http.createServer(async (request, response) => {
     try {
-      if (request.method === "GET" && request.url === "/health") {
+      const { pathname } = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
+
+      if (request.method === "OPTIONS") {
+        sendCors(response, 204);
+        return;
+      }
+
+      if (request.method === "GET" && pathname === "/health") {
         sendJson(response, 200, {
           ok: true,
           name: "jlr-configurator-mcp",
@@ -15,21 +22,29 @@ export function startHttpServer(config) {
         return;
       }
 
-      if (request.url === "/mcp" && !isAuthorized(request, config)) {
+      if (request.url === "/.well-known/oauth-protected-resource") {
+        sendJson(response, 404, { error: "OAuth is not enabled for this test server" });
+        return;
+      }
+
+      const isMcpPath = pathname === "/mcp" || pathname === "/mcp/";
+
+      if (isMcpPath && !isAuthorized(request, config)) {
         sendJson(response, 401, { error: "Unauthorized" });
         return;
       }
 
-      if (request.url === "/mcp" && !withinRateLimit(request, config)) {
+      if (isMcpPath && !withinRateLimit(request, config)) {
         sendJson(response, 429, { error: "Rate limit exceeded" });
         return;
       }
 
-      if (request.method === "GET" && request.url === "/mcp") {
+      if (request.method === "GET" && isMcpPath) {
         response.writeHead(200, {
           "content-type": "text/event-stream",
           "cache-control": "no-cache",
           connection: "keep-alive",
+          ...corsHeaders(),
         });
         response.write("event: endpoint\n");
         response.write("data: /mcp\n\n");
@@ -37,14 +52,20 @@ export function startHttpServer(config) {
         return;
       }
 
-      if (request.method === "POST" && request.url === "/mcp") {
+      if (request.method === "POST" && isMcpPath) {
         const body = await readBody(request);
         const payload = JSON.parse(body || "{}");
+        const result = Array.isArray(payload)
+          ? await Promise.all(payload.map(handleMcpMessage))
+          : await handleMcpMessage(payload);
+        if (wantsEventStream(request)) {
+          sendSse(response, result);
+          return;
+        }
         if (Array.isArray(payload)) {
-          const results = await Promise.all(payload.map(handleMcpMessage));
-          sendJson(response, 200, results);
+          sendJson(response, 200, result);
         } else {
-          sendJson(response, 200, await handleMcpMessage(payload));
+          sendJson(response, 200, result);
         }
         return;
       }
@@ -101,6 +122,38 @@ function readBody(request) {
 function sendJson(response, status, payload) {
   response.writeHead(status, {
     "content-type": "application/json; charset=utf-8",
+    ...corsHeaders(),
   });
   response.end(JSON.stringify(payload));
+}
+
+function sendCors(response, status) {
+  response.writeHead(status, corsHeaders());
+  response.end();
+}
+
+function corsHeaders() {
+  return {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET,POST,OPTIONS",
+    "access-control-allow-headers": "authorization,content-type,mcp-session-id",
+    "access-control-expose-headers": "mcp-session-id",
+  };
+}
+
+function wantsEventStream(request) {
+  const accept = request.headers.accept || "";
+  return accept.includes("text/event-stream");
+}
+
+function sendSse(response, payload) {
+  response.writeHead(200, {
+    "content-type": "text/event-stream",
+    "cache-control": "no-cache",
+    connection: "keep-alive",
+    ...corsHeaders(),
+  });
+  response.write("event: message\n");
+  response.write(`data: ${JSON.stringify(payload)}\n\n`);
+  response.end();
 }
