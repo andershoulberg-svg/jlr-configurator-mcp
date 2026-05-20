@@ -1,0 +1,13 @@
+{
+  "name": "jlr-configurator-mcp",
+  "version": "0.2.0",
+  "description": "Client-demo MCP server for public JLR configurator payloads, market pricing, specs, dependencies, and build comparison.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
