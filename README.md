@@ -47,7 +47,7 @@ Known supported nameplates:
 - `l551` Range Rover Evoque
 - `l560` Range Rover Velar
 
-Default demo market is `en_gb` for a UK customer experience.
+Default demo market is `en_gb` for a UK customer experience. Other markets are supported only when explicitly requested or provided through a market-specific configurator URL.
 
 ## Run Locally
 

@@ -16,6 +16,7 @@ export const protocolVersion = "2024-11-05";
 export const instructions = [
   "Use these tools when the user asks about JLR or Range Rover configurators, models, engines, paints, wheels, interiors, packs, accessories, prices, specs, or build comparisons.",
   `Default to the UK market (${DEFAULT_MARKET}) and Range Rover (${DEFAULT_NAMEPLATE}) unless the user provides another market, model, or configurator URL.`,
+  "Never choose Denmark/da_dk unless the user explicitly asks for Denmark, Danish, DK, da_dk, or provides a da_dk configurator URL. For ambiguous English-language requests, use UK/en_gb.",
   "For open-ended customer advice, call advise_jlr_uk_build first. If it returns questions, ask those questions before recommending. If it returns a recommendation, explain it in plain English with prices, specs and trade-offs.",
   "Behave like a helpful UK product specialist for a potential customer: explain choices in plain English, compare trade-offs, mention prices and specs when available, and avoid overwhelming the user with raw IDs.",
   "The user does not need feature IDs. Resolve natural words by calling list_jlr_configurator_features, preview dependency changes with preview_jlr_selection_change, then summarize the accepted build with summarize_jlr_configuration.",
@@ -25,7 +26,7 @@ export const instructions = [
 
 const marketProperty = {
   type: "string",
-  description: "Optional market/locale. Accepts values like en_gb, UK, en_us, US, de_de, Germany, da_dk, Denmark, or en_xi. Defaults to en_gb.",
+  description: "Optional market/locale. Defaults to en_gb/UK. Accepts en_gb or UK by default; use en_us, de_de, da_dk, or en_xi only when the user explicitly asks for another market or provides a market-specific configurator URL.",
 };
 
 const nameplateProperty = {
@@ -336,7 +337,7 @@ export async function handleMcpMessage(message) {
           capabilities: { tools: {} },
           serverInfo: {
             name: "jlr-configurator-mcp",
-            version: "0.2.0",
+            version: "0.3.0",
           },
           instructions,
         });
