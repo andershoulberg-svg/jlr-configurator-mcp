@@ -49,7 +49,7 @@ Expected:
 
 - `/health` returns `ok: true`
 - `initialize` returns `jlr-configurator-mcp`
-- `tools/list` returns 7 tools
+- `tools/list` returns 8 tools
 - `summarize_jlr_configuration` returns a UK Range Rover summary with a formatted gross price
 
 ## 4. Connect In ChatGPT Developer Mode

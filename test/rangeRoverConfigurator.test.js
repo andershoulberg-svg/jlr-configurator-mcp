@@ -4,6 +4,7 @@ import {
   buildConfiguratorUrl,
   buildPreviewRulesUrl,
   buildRulesUrl,
+  adviseUkBuild,
   findConfigurators,
   flattenFeatures,
   getConfiguratorData,
@@ -134,9 +135,10 @@ test("MCP initialize and tools/list return the enhanced tool surface", async () 
   const listed = await handleMcpMessage({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} });
   const names = listed.result.tools.map((tool) => tool.name);
   assert.ok(names.includes("find_jlr_configurators"));
+  assert.ok(names.includes("advise_jlr_uk_build"));
   assert.ok(names.includes("preview_jlr_selection_change"));
   assert.ok(names.includes("compare_jlr_builds"));
-  assert.equal(names.length, 7);
+  assert.equal(names.length, 8);
 });
 
 test("resolves configured URLs for key markets and nameplates", async () => {
@@ -224,4 +226,29 @@ test("compares two public JLR builds by highlights and specs", async () => {
   assert.equal(result.builds[0].highlights.model.label, "Range Rover HSE");
   assert.equal(result.builds[1].highlights.model.label, "Range Rover SV");
   assert.ok(result.highlight_differences.model);
+});
+
+test("UK advisor asks buying questions before recommending", async () => {
+  const result = await adviseUkBuild({});
+
+  assert.equal(result.status, "needs_preferences");
+  assert.ok(result.questions.length >= 3);
+  assert.equal(result.market, "en_gb");
+});
+
+test("UK advisor recommends a customer-friendly build with trade-offs", async () => {
+  const result = await adviseUkBuild({
+    budget_gbp: 95000,
+    passengers: 4,
+    typical_use: "family car with motorway trips and a sportier drive",
+    charging_access: "I can charge at home",
+    priorities: ["performance", "technology"],
+  });
+
+  assert.equal(result.status, "recommendation");
+  assert.equal(result.market, "en_gb");
+  assert.ok(result.recommendation.vehicle);
+  assert.ok(result.recommendation.price.formatted.includes("£"));
+  assert.ok(result.recommendation.why_this_fits.length > 0);
+  assert.ok(result.alternatives.length >= 2);
 });

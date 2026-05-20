@@ -1,6 +1,7 @@
 import {
   DEFAULT_MARKET,
   DEFAULT_NAMEPLATE,
+  adviseUkBuild,
   compareBuilds,
   findConfigurators,
   getFeatureDetails,
@@ -15,6 +16,7 @@ export const protocolVersion = "2024-11-05";
 export const instructions = [
   "Use these tools when the user asks about JLR or Range Rover configurators, models, engines, paints, wheels, interiors, packs, accessories, prices, specs, or build comparisons.",
   `Default to the UK market (${DEFAULT_MARKET}) and Range Rover (${DEFAULT_NAMEPLATE}) unless the user provides another market, model, or configurator URL.`,
+  "For open-ended customer advice, call advise_jlr_uk_build first. If it returns questions, ask those questions before recommending. If it returns a recommendation, explain it in plain English with prices, specs and trade-offs.",
   "Behave like a helpful UK product specialist for a potential customer: explain choices in plain English, compare trade-offs, mention prices and specs when available, and avoid overwhelming the user with raw IDs.",
   "The user does not need feature IDs. Resolve natural words by calling list_jlr_configurator_features, preview dependency changes with preview_jlr_selection_change, then summarize the accepted build with summarize_jlr_configuration.",
   "Use find_jlr_configurators when the user asks what can be built in a market or names a model family such as Range Rover Sport, Evoque, or Velar.",
@@ -43,6 +45,68 @@ const selectionIdsProperty = {
 };
 
 export const tools = [
+  {
+    name: "advise_jlr_uk_build",
+    title: "Advise UK JLR Build",
+    description:
+      "Use for open-ended UK customer guidance such as 'which Range Rover should I buy?', 'help me choose a build', or 'recommend a JLR model for my needs'. If key preferences are missing, returns 3-5 short buying questions. Once enough context is available, recommends a UK build with price, rationale, trade-offs, next options to explore, and alternative models.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        budget_gbp: {
+          type: "number",
+          description: "Optional rough on-the-road budget in GBP. Use this when the user gives a purchase budget rather than a monthly payment.",
+        },
+        monthly_budget_gbp: {
+          type: "number",
+          description: "Optional monthly affordability signal if the user gives a monthly figure. This is only used as context; the tool does not quote finance.",
+        },
+        passengers: {
+          type: "integer",
+          description: "How many people the customer regularly carries.",
+          minimum: 1,
+          maximum: 8,
+        },
+        typical_use: {
+          type: "string",
+          description: "Natural description of use case, e.g. city driving, motorway miles, family trips, towing, commuting, mixed use.",
+        },
+        driving_pattern: {
+          type: "string",
+          description: "Optional extra driving context such as mostly long-distance motorway, short urban trips, school runs, rural roads, or business use.",
+        },
+        fuel_preference: {
+          type: "string",
+          description: "Customer preference such as petrol, diesel, plug-in hybrid, electric-feeling driving, no preference, or lower emissions.",
+        },
+        charging_access: {
+          type: "string",
+          description: "Whether the customer can charge at home/work, cannot charge reliably, or is unsure.",
+        },
+        towing: {
+          type: "boolean",
+          description: "Whether towing should influence the recommendation.",
+        },
+        priorities: {
+          type: "array",
+          description: "Customer priorities such as comfort, quiet luxury, performance, compact size, technology, towing, lower running costs, design, audio.",
+          items: { type: "string" },
+        },
+        must_haves: {
+          type: "string",
+          description: "Any must-have features or constraints in natural language.",
+        },
+        preferred_model: nameplateProperty,
+        nameplate: nameplateProperty,
+        force_refresh: {
+          type: "boolean",
+          description: "Bypass the short in-memory cache and refetch the JLR payload.",
+          default: false,
+        },
+      },
+    },
+  },
   {
     name: "find_jlr_configurators",
     title: "Find JLR Configurators",
@@ -301,6 +365,8 @@ export async function callTool(params) {
 
   if (name === "find_jlr_configurators") {
     result = await findConfigurators(args);
+  } else if (name === "advise_jlr_uk_build") {
+    result = await adviseUkBuild(args);
   } else if (name === "list_jlr_configurator_features" || name === "list_range_rover_features") {
     result = await listFeatures(args);
   } else if (name === "get_jlr_feature_details" || name === "get_range_rover_feature_details") {

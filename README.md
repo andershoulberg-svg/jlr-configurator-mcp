@@ -11,12 +11,14 @@ It can act like a market-aware product specialist in ChatGPT:
 - Preview dependency changes before selecting a feature.
 - Return technical specs, WLTP/towing/dimensions rows, standard features and media URLs.
 - Compare 2-4 builds by price, key features and top specs.
+- Guide a UK customer through 3-5 buying questions and recommend a sensible starting build.
 
 The server uses public configurator payloads only. It does not call saved-build, stock, order, VIN, retailer, lead-time, or finance quote endpoints.
 
 ## MCP Tools
 
 - `find_jlr_configurators`
+- `advise_jlr_uk_build`
 - `list_jlr_configurator_features`
 - `get_jlr_feature_details`
 - `summarize_jlr_configuration`
@@ -77,6 +79,8 @@ node src/index.js
 ## Example Natural Prompts
 
 - "Find the UK Range Rover configurators."
+- "Help me choose the right Range Rover for UK family use."
+- "I have about £95k, can charge at home, and want something sporty but practical. What should I look at?"
 - "Summarize the UK Range Rover default build with price."
 - "Find Santorini Black and tell me the feature ID."
 - "What changes if I add Comfort Pack to a Range Rover HSE D300?"

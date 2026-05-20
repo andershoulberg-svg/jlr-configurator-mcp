@@ -513,6 +513,309 @@ export async function compareBuilds(args = {}) {
   };
 }
 
+export async function adviseUkBuild(args = {}) {
+  const preferences = normalizeAdvisorPreferences(args);
+  const questions = advisorQuestions(preferences);
+
+  if (!preferences.ready) {
+    return {
+      status: "needs_preferences",
+      market: "en_gb",
+      message: "I can recommend a UK JLR build, but I need a little more buying context first.",
+      questions,
+      already_known: preferences.known,
+      guidance:
+        "Answer in normal language. Budget, passenger needs, driving pattern, charging access, towing and comfort/performance priorities are enough to produce a first recommendation.",
+      caveats: [
+        "This is product guidance from public UK configurator data, not finance, stock, delivery, retailer or order advice.",
+      ],
+    };
+  }
+
+  const candidates = await Promise.all(Object.keys(NAMEPLATES).map(async (nameplate) => {
+    const summary = await summarizeConfiguration({
+      market: "en_gb",
+      nameplate,
+      force_refresh: args.force_refresh,
+    });
+    return scoreAdvisorCandidate(summary, preferences);
+  }));
+
+  candidates.sort((a, b) => b.score - a.score);
+  const recommended = candidates[0];
+  const optionIdeas = advisorOptionIdeas(recommended.summary, preferences);
+
+  return {
+    status: "recommendation",
+    market: "en_gb",
+    customer_profile: preferences.known,
+    recommendation: {
+      nameplate: recommended.summary.source.nameplate,
+      vehicle: NAMEPLATES[recommended.summary.source.nameplate]?.label || recommended.summary.vehicle,
+      model: recommended.summary.highlights.model?.label,
+      engine: recommended.summary.highlights.propulsion?.label,
+      price: recommended.summary.price?.gross,
+      configurator_url: recommended.summary.configurator_url,
+      why_this_fits: recommended.reasons.slice(0, 4),
+      trade_offs: recommended.tradeoffs.slice(0, 4),
+      key_specs: customerKeySpecs(recommended.summary.top_specs),
+      options_to_explore_next: optionIdeas,
+    },
+    alternatives: candidates.slice(1).map((candidate) => ({
+      vehicle: NAMEPLATES[candidate.summary.source.nameplate]?.label || candidate.summary.vehicle,
+      model: candidate.summary.highlights.model?.label,
+      engine: candidate.summary.highlights.propulsion?.label,
+      price: candidate.summary.price?.gross,
+      fit: candidate.reasons.slice(0, 2),
+      watch_out: candidate.tradeoffs.slice(0, 2),
+      configurator_url: candidate.summary.configurator_url,
+    })),
+    follow_up_questions: advisorRefinementQuestions(preferences),
+    caveats: [
+      "Recommendation is based on public UK configurator defaults and visible prices.",
+      "It does not check retailer stock, delivery timing, finance, part-exchange, incentives, saved builds or ordering.",
+      "Use preview_jlr_selection_change before adding a specific option or trim so dependencies are clear.",
+    ],
+  };
+}
+
+function normalizeAdvisorPreferences(args = {}) {
+  const priorities = arrayOrEmpty(args.priorities).map((item) => normalizeText(item)).filter(Boolean);
+  const text = normalizeText([
+    args.typical_use,
+    args.driving_pattern,
+    args.fuel_preference,
+    args.charging_access,
+    args.must_haves,
+    args.current_vehicle,
+    args.notes,
+    priorities.join(" "),
+  ].filter(Boolean).join(" "));
+  const passengers = Number(args.passengers || args.seats || 0);
+  const budget = Number(args.budget_gbp || args.monthly_budget_gbp || args.budget || 0);
+  const hasBudget = Number.isFinite(budget) && budget > 0;
+  const known = removeEmpty({
+    budget_gbp: hasBudget ? budget : undefined,
+    passengers: Number.isFinite(passengers) && passengers > 0 ? passengers : undefined,
+    typical_use: args.typical_use,
+    driving_pattern: args.driving_pattern,
+    fuel_preference: args.fuel_preference,
+    charging_access: args.charging_access,
+    towing: args.towing,
+    priorities: arrayOrEmpty(args.priorities),
+    must_haves: args.must_haves,
+    preferred_model: args.preferred_model || args.nameplate,
+  });
+  const signalCount = [
+    hasBudget,
+    passengers > 0,
+    !!args.typical_use || !!args.driving_pattern,
+    !!args.fuel_preference || !!args.charging_access,
+    typeof args.towing === "boolean",
+    priorities.length > 0 || !!args.must_haves,
+    !!args.preferred_model || !!args.nameplate,
+  ].filter(Boolean).length;
+
+  return {
+    ...args,
+    text,
+    budget,
+    hasBudget,
+    passengers: Number.isFinite(passengers) ? passengers : 0,
+    priorities,
+    known,
+    ready: signalCount >= 3,
+  };
+}
+
+function advisorQuestions(preferences) {
+  const questions = [];
+  if (!preferences.hasBudget) {
+    questions.push("What is your rough on-the-road budget in GBP, or are you mainly comparing monthly affordability?");
+  }
+  if (!preferences.passengers) {
+    questions.push("How many people do you regularly carry, and do you need a large boot or occasional seven-seat flexibility?");
+  }
+  if (!preferences.typical_use && !preferences.driving_pattern) {
+    questions.push("What is the car mostly for: city driving, motorway miles, family trips, towing, commuting, or mixed use?");
+  }
+  if (!preferences.fuel_preference && !preferences.charging_access) {
+    questions.push("Can you charge at home or work, or would you prefer petrol/diesel simplicity?");
+  }
+  if (!preferences.priorities.length && !preferences.must_haves) {
+    questions.push("What matters most: comfort, quiet luxury, performance, lower running costs, technology, towing, or compact size?");
+  }
+  return questions.slice(0, 5);
+}
+
+function scoreAdvisorCandidate(summary, preferences) {
+  const nameplate = summary.source.nameplate;
+  const price = summary.price?.gross?.value || 0;
+  const text = preferences.text;
+  let score = 0;
+  const reasons = [];
+  const tradeoffs = [];
+
+  if (preferences.hasBudget && price) {
+    if (price <= preferences.budget) {
+      score += 20;
+      reasons.push(`Fits within the stated budget at ${summary.price.gross.formatted}.`);
+    } else {
+      const over = price - preferences.budget;
+      score -= Math.min(30, Math.ceil(over / 5000) * 4);
+      tradeoffs.push(`Starts above the stated budget at ${summary.price.gross.formatted}.`);
+    }
+  }
+
+  if (/luxury|comfort|quiet|refined|chauffeur|premium/.test(text)) {
+    if (nameplate === "l460") {
+      score += 18;
+      reasons.push("Best fit for quiet luxury, comfort and flagship Range Rover presence.");
+    }
+    if (nameplate === "l551") tradeoffs.push("More compact and accessible, but less flagship-luxury than Range Rover or Velar.");
+  }
+
+  if (/sport|performance|dynamic|fast|driver|handling/.test(text)) {
+    if (nameplate === "l461") {
+      score += 18;
+      reasons.push("Best fit for a more dynamic Range Rover feel without going to the full-size flagship.");
+    }
+    if (nameplate === "l460") tradeoffs.push("More luxurious than sporting; Range Rover Sport is the sharper drive.");
+  }
+
+  if (/city|urban|compact|parking|small|easy/.test(text)) {
+    if (nameplate === "l551") {
+      score += 18;
+      reasons.push("Most compact and easiest Range Rover family option for urban use.");
+    }
+    if (nameplate === "l460") tradeoffs.push("Large and luxurious, but less convenient for tight city parking.");
+  }
+
+  if (/style|design|sleek|coupe|coupe|looks/.test(text)) {
+    if (nameplate === "l560") {
+      score += 14;
+      reasons.push("Strong fit if design, style and a more elegant mid-size SUV feel matter.");
+    }
+  }
+
+  if (/tow|horse|boat|caravan|trailer/.test(text) || preferences.towing === true) {
+    if (nameplate === "l460" || nameplate === "l461") {
+      score += 14;
+      reasons.push("Better suited to towing-focused use than the smaller models.");
+    } else {
+      tradeoffs.push("If towing is important, compare towing limits carefully against Range Rover or Range Rover Sport.");
+    }
+  }
+
+  if (/charge|charging|plug|phev|electric|ev|low emission|tax|company car/.test(text)) {
+    const engine = normalizeText(summary.highlights.propulsion?.label || "");
+    if (/plug/.test(engine)) {
+      score += 16;
+      reasons.push(`The default ${summary.highlights.propulsion.label} suits charging access and lower-emission use cases.`);
+    } else {
+      tradeoffs.push("The default engine is not a plug-in hybrid; check PHEV alternatives if charging or company-car tax is central.");
+    }
+  }
+
+  if (/motorway|long distance|long miles|diesel|range/.test(text)) {
+    const engine = normalizeText(summary.highlights.propulsion?.label || "");
+    if (/diesel/.test(engine)) {
+      score += 14;
+      reasons.push(`The default ${summary.highlights.propulsion.label} is a sensible long-distance starting point.`);
+    } else {
+      tradeoffs.push("A plug-in hybrid can be excellent with charging, but long motorway use may favour a diesel alternative.");
+    }
+  }
+
+  if (preferences.passengers >= 5) {
+    if (nameplate === "l460" || nameplate === "l461") {
+      score += 10;
+      reasons.push("Better family-space starting point than Evoque or Velar.");
+    } else {
+      tradeoffs.push("More compact cabin and boot than Range Rover or Range Rover Sport.");
+    }
+  }
+
+  if (preferences.preferred_model || preferences.nameplate) {
+    const preferred = normalizeNameplate(preferences.preferred_model || preferences.nameplate);
+    if (nameplate === preferred) {
+      score += 20;
+      reasons.push("Matches the model family you asked about.");
+    }
+  }
+
+  if (preferences.hasBudget) {
+    if (preferences.budget < 60000 && nameplate === "l551") score += 12;
+    if (preferences.budget >= 60000 && preferences.budget < 85000 && nameplate === "l560") score += 10;
+    if (preferences.budget >= 85000 && preferences.budget < 105000 && nameplate === "l461") score += 10;
+    if (preferences.budget >= 105000 && nameplate === "l460") score += 10;
+  }
+
+  if (!reasons.length) {
+    reasons.push(`${NAMEPLATES[nameplate]?.label || summary.vehicle} is a credible UK starting point at ${summary.price?.gross?.formatted || "the visible configurator price"}.`);
+  }
+
+  return {
+    score,
+    summary,
+    reasons,
+    tradeoffs,
+  };
+}
+
+function customerKeySpecs(specs = []) {
+  const wanted = /acceleration|combined wltp consumption|combined wltp co|maximum towing|maximum power|maximum torque/i;
+  return specs
+    .filter((spec) => wanted.test(`${spec.group} ${spec.label}`))
+    .slice(0, 6)
+    .map((spec) => ({
+      label: spec.label,
+      value: spec.value,
+      group: spec.group,
+    }));
+}
+
+function advisorOptionIdeas(summary, preferences) {
+  const ideas = [];
+  const text = preferences.text;
+
+  if (/comfort|luxury|quiet|family/.test(text)) {
+    ideas.push("Explore Comfort Pack or seating upgrades, then preview dependencies before adding them.");
+  }
+  if (/tow|horse|boat|caravan|trailer/.test(text) || preferences.towing === true) {
+    ideas.push("Explore tow bar and towing assistance options, then check the maximum towing spec for the chosen engine.");
+  }
+  if (/music|audio|meridian|sound/.test(text)) {
+    ideas.push("Compare Meridian audio options against the default sound system.");
+  }
+  if (/black|stealth|dark|privacy/.test(text)) {
+    ideas.push("Search black exterior packs, privacy glass and wheel choices before finalising the look.");
+  }
+  if (!ideas.length) {
+    ideas.push("Next, choose paint, wheels, interior trim and one comfort or technology pack rather than changing everything at once.");
+  }
+
+  if (summary.summary_media?.[0]?.url) {
+    ideas.push("Use the configurator media URLs to show the customer the exact visual direction of the build.");
+  }
+
+  return ideas.slice(0, 4);
+}
+
+function advisorRefinementQuestions(preferences) {
+  const questions = [];
+  if (!/charge|charging|plug|phev|electric|ev|diesel|petrol/.test(preferences.text)) {
+    questions.push("Do you have reliable home or work charging, or should we bias toward petrol/diesel?");
+  }
+  if (!/comfort|luxury|sport|performance|city|tow|family|technology|audio/.test(preferences.text)) {
+    questions.push("Which one should lead the build: comfort, performance, technology, towing, or compact everyday use?");
+  }
+  if (preferences.towing !== true && !/tow|trailer|caravan|horse|boat/.test(preferences.text)) {
+    questions.push("Will you tow anything heavy enough that towing capacity should drive the engine choice?");
+  }
+  return questions.slice(0, 3);
+}
+
 export function flattenFeatures(data) {
   const rootLists = data?.["feature-dictionary"]?.["feature-list"];
   const lists = Array.isArray(rootLists) ? rootLists : Object.values(rootLists || {});
