@@ -213,11 +213,59 @@
       color: #cfcac0;
     }
 
-    .feature-band img {
-      width: 100%;
-      aspect-ratio: 16 / 10;
-      object-fit: cover;
-      display: block;
+    .feature-visual {
+      min-height: 260px;
+      padding: 28px;
+      display: grid;
+      align-content: center;
+      gap: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0)),
+        #181818;
+    }
+
+    .vehicle-line {
+      position: relative;
+      height: 72px;
+      border-bottom: 2px solid #c6b089;
+    }
+
+    .vehicle-line::before {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: 14px;
+      height: 34px;
+      border: 2px solid #c6b089;
+      border-bottom: 0;
+      border-radius: 54% 46% 0 0 / 100% 100% 0 0;
+    }
+
+    .vehicle-line::after {
+      content: "";
+      position: absolute;
+      left: 14%;
+      right: 14%;
+      bottom: 0;
+      height: 18px;
+      border-top: 2px solid #c6b089;
+    }
+
+    .visual-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .visual-metric {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.07);
+      color: #eee9df;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
     }
 
     .card p {
@@ -566,7 +614,14 @@
             The pilot follows the way a customer naturally thinks: model line, use case, charging access, budget, comfort, performance and equipment. ChatGPT handles the conversation, while the MCP supplies the official configurator facts.
           </p>
         </div>
-        <img alt="Range Rover configurator visual" src="https://assets.config.landrover.com/lr/l460/k27/inkf/base/inbse_l460_k27_a-swb_a-std-se_n-301mx_n-401ae_gl_1.jpg?v=4culc">
+        <div class="feature-visual" role="img" aria-label="Abstract Range Rover configurator data visual">
+          <div class="vehicle-line"></div>
+          <div class="visual-grid">
+            <div class="visual-metric">UK market</div>
+            <div class="visual-metric">8 tools</div>
+            <div class="visual-metric">Live MCP</div>
+          </div>
+        </div>
       </div>
       <div class="grid">
         <div class="card">
@@ -727,7 +782,7 @@
     <section id="developer-handover">
       <h2>Developer Handover</h2>
       <p class="lead">
-        The working MCP source files have been packaged for review. The bundle contains the Node server, tool adapter, tests, Render deployment files and documentation used for the live pilot.
+        The working MCP source files have been packaged for review. The bundle contains the Node server, tool adapter, tests, Render deployment files, documentation and technical review notes used for the live pilot.
       </p>
       <div class="band">
         <strong>Developer bundle:</strong> <code>jlr-configurator-mcp-dev-bundle.zip</code><br>
@@ -746,6 +801,7 @@
         <li><code>render.yaml</code><br>Render Blueprint used for the live no-auth pilot.</li>
         <li><code>README.md</code><br>Developer overview, tool list and local run notes.</li>
         <li><code>DEPLOYMENT.md</code><br>Hosting and ChatGPT test checklist.</li>
+        <li><code>TECHNICAL_REVIEW_NOTES.md</code><br>Known pilot limitations and production hardening recommendations.</li>
       </ul>
     </section>
 

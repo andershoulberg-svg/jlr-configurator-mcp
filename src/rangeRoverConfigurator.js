@@ -5,6 +5,12 @@ const DEFAULT_SOURCE_URL =
 
 const RULES_BASE_URL = "https://rules.config.landrover.com";
 const CONFIGURATOR_HOST = "https://www.rangerover.com";
+const ALLOWED_CONFIGURATOR_HOSTS = new Set([
+  "www.rangerover.com",
+  "rangerover.com",
+  "www.landrover.com",
+  "landrover.com",
+]);
 const DEFAULT_TIMEOUT_MS = 20000;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -84,6 +90,7 @@ export function parseSourceUrl(sourceUrl) {
 
 export function parseConfiguratorUrl(sourceUrl) {
   const url = new URL(sourceUrl || DEFAULT_SOURCE_URL, CONFIGURATOR_HOST);
+  assertAllowedConfiguratorHost(url);
   const parts = url.pathname.split("/").filter(Boolean);
   const brand = parts[0];
   const locale = parts[1];
@@ -215,7 +222,7 @@ export async function fetchJsonp(url, options = {}) {
       signal: controller.signal,
       headers: {
         accept: "application/javascript, application/json, text/javascript, */*",
-        "user-agent": "jlr-configurator-mcp/0.2",
+        "user-agent": "jlr-configurator-mcp/0.3",
       },
     });
 
@@ -1368,15 +1375,23 @@ async function resolveFinalUrl(url) {
       signal: controller.signal,
       headers: {
         accept: "text/html,application/xhtml+xml",
-        "user-agent": "jlr-configurator-mcp/0.2",
+        "user-agent": "jlr-configurator-mcp/0.3",
       },
     });
     if (!response.ok) {
       throw new Error(`Could not resolve configurator URL; HTTP ${response.status}.`);
     }
-    return response.url;
+    const resolvedUrl = new URL(response.url);
+    assertAllowedConfiguratorHost(resolvedUrl);
+    return resolvedUrl.toString();
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+function assertAllowedConfiguratorHost(url) {
+  if (!ALLOWED_CONFIGURATOR_HOSTS.has(url.hostname.toLowerCase())) {
+    throw new Error("Configurator URL must be on an official Range Rover/Land Rover host.");
   }
 }
 

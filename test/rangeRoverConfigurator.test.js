@@ -28,6 +28,13 @@ test("parses an expanded Range Rover configurator URL", () => {
   assert.equal(parsed.version, "4cujt");
 });
 
+test("rejects non-JLR configurator hosts", () => {
+  assert.throws(
+    () => parseSourceUrl("https://example.com/lr/en_gb/l460_k27/4culc/ipr/personalise/"),
+    /official Range Rover\/Land Rover host/
+  );
+});
+
 test("builds rules, preview and configurator URLs with selected feature IDs", () => {
   const source = parseSourceUrl("https://www.rangerover.com/lr/en_xi/l460_k27/4cujt/ipr/personalise/");
 

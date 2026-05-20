@@ -62,7 +62,7 @@ Based on OpenAI Developer Mode docs:
 4. Create an app from a remote MCP server.
 5. MCP server URL: `https://<host>/mcp`
 6. Authentication: No Authentication for the short-lived demo.
-7. Refresh the app/tool list and confirm the seven JLR tools appear.
+7. Refresh the app/tool list and confirm the eight JLR tools appear.
 
 Good test prompts:
 
