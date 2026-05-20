@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JLR Configurator MCP | Client Demo</title>
+  <style>
+    :root {
+      --ink: #111111;
+      --muted: #5f6762;
+      --line: #d7d7d2;
+      --soft: #f4f3ef;
+      --panel: #ffffff;
+      --accent: #0b2f26;
+      --accent-2: #9a7a44;
+      --accent-soft: #eef1ed;
+      --code: #1f2723;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #fbfbf8;
+      font-family: "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    .topbar {
+      min-height: 76vh;
+      display: grid;
+      align-items: end;
+      padding: 48px 32px;
+      color: #fff;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.82)),
+        url("https://assets.config.landrover.com/lr/l460/k27/exkf/colour/exbse_l460_k27_a-swb_a-std-se_n-1aa_gl_1.jpg?v=4culc") center / cover no-repeat;
+    }
+
+    .hero {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: #e8e7e1;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(40px, 5.7vw, 78px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      max-width: 720px;
+      margin: 24px 0 0;
+      color: #f0eee8;
+      font-size: 19px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      font-size: 14px;
+      backdrop-filter: blur(8px);
+    }
+
+    main {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    section {
+      padding: 54px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: 32px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    .lead {
+      max-width: 830px;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      min-height: 168px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: var(--panel);
+    }
+
+    .card p {
+      color: var(--muted);
+    }
+
+    .number {
+      color: var(--accent);
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .band {
+      margin: 24px 0 0;
+      padding: 24px;
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .setup-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+      counter-reset: setup;
+    }
+
+    .setup-item {
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .setup-item::before {
+      counter-increment: setup;
+      content: "0" counter(setup);
+      display: block;
+      margin-bottom: 10px;
+      color: var(--accent-2);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .tool-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .tool {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: #fff;
+    }
+
+    .file-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 22px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .file-list li {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+    }
+
+    .file-list code {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .tool code {
+      color: var(--code);
+      font-weight: 700;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: #fff;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      margin-bottom: 14px;
+      border-radius: 2px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .comparison {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 22px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .comparison th,
+    .comparison td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .comparison th {
+      background: var(--soft);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .comparison tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 2px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .chat {
+      display: grid;
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .message {
+      padding: 18px;
+      border-radius: 2px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .message.user {
+      border-left: 4px solid var(--accent);
+    }
+
+    .message.assistant {
+      border-left: 4px solid var(--accent-2);
+    }
+
+    .message.tool {
+      padding: 10px 14px;
+      border-style: dashed;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .speaker {
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .message ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .message table {
+      width: 100%;
+      margin: 14px 0;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .message th,
+    .message td {
+      padding: 9px;
+      border: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    .message th {
+      background: var(--soft);
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: var(--soft);
+      color: var(--code);
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.92em;
+    }
+
+    footer {
+      padding: 34px 0 50px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 840px) {
+      .topbar {
+        min-height: 68vh;
+        padding: 34px 20px;
+      }
+
+      main {
+        width: min(100% - 28px, 1120px);
+      }
+
+      .grid,
+      .grid.two,
+      .tool-list,
+      .steps,
+      .setup-list,
+      .file-list {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="hero">
+      <p class="eyebrow">Client demo MCP for JLR UK</p>
+      <h1>Turning the Range Rover configurator into a guided customer adviser</h1>
+      <p class="hero-copy">
+        A working Model Context Protocol server that lets ChatGPT answer customer questions using public JLR configurator data: UK-first, customer-friendly, and constrained to official configurator payloads.
+      </p>
+      <div class="hero-meta">
+        <span class="pill">Live Render endpoint</span>
+        <span class="pill">UK default market</span>
+        <span class="pill">No-auth test mode</span>
+        <span class="pill">Public configurator data only</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <span class="status"><span class="dot"></span> Working prototype</span>
+      <h2 style="margin-top: 18px;">What This MCP Does</h2>
+      <p class="lead">
+        The JLR Configurator MCP gives ChatGPT a controlled way to work with the official public configurator payloads behind Range Rover model pages. Instead of open web browsing or generic automotive advice, ChatGPT can ask the MCP for current UK configurator data, summarise builds, compare options, explain dependencies and guide a prospective customer through a buying conversation.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <div class="number">8</div>
+          <h3>MCP tools</h3>
+          <p>Covering guided advice, configurator discovery, build summaries, feature search, dependencies, specifications and comparison.</p>
+        </div>
+        <div class="card">
+          <div class="number">4</div>
+          <h3>Range Rover model lines</h3>
+          <p>Range Rover, Range Rover Sport, Range Rover Velar and Range Rover Evoque are supported.</p>
+        </div>
+        <div class="card">
+          <div class="number">UK</div>
+          <h3>Default market</h3>
+          <p>The MCP now defaults to <code>en_gb</code> unless the user explicitly asks for another market.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Why It Matters For JLR</h2>
+      <p class="lead">
+        Configurators are rich, but they can be hard for customers to interpret. This MCP lets ChatGPT become a guided product specialist that can reason from JLR's own configurator data whilst staying inside an approved, bounded data source.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>Customer guidance</h3>
+          <p>It can ask about budget, family needs, charging access, driving pattern, towing and priorities before recommending a model.</p>
+        </div>
+        <div class="card">
+          <h3>Official-data grounding</h3>
+          <p>Responses are based on public configurator payloads rather than broad web results, reviews or third-party information.</p>
+        </div>
+        <div class="card">
+          <h3>Decision support</h3>
+          <p>It can compare flagship luxury against PHEV convenience, show trade-offs and provide configurator URLs.</p>
+        </div>
+      </div>
+      <div class="band">
+        <strong>Current live endpoint:</strong> <code>https://jlr-configurator-mcp.onrender.com/mcp</code><br>
+        <span class="muted">Hosted on Render for pilot testing in ChatGPT Developer Mode.</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Customer Adviser Flow</h2>
+      <p class="lead">
+        The new adviser layer is designed for open-ended questions such as "Which Range Rover should I choose?" If there is not enough information, it asks short buying questions. Once enough context is available, it recommends a UK build and explains the trade-offs.
+      </p>
+      <div class="steps">
+        <div class="step">
+          <h3>Understand the brief</h3>
+          <p>Budget, passengers, use case, charging access, towing and priorities.</p>
+        </div>
+        <div class="step">
+          <h3>Resolve UK configurators</h3>
+          <p>Find current public UK model-line URLs and defaults.</p>
+        </div>
+        <div class="step">
+          <h3>Recommend a build</h3>
+          <p>Show model, trim, engine, price, rationale and alternatives.</p>
+        </div>
+        <div class="step">
+          <h3>Refine safely</h3>
+          <p>Preview option changes and dependencies before changing a build.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tool Surface</h2>
+      <p class="lead">
+        The MCP exposes a focused set of tools so ChatGPT can work from natural customer language without asking the customer for feature IDs.
+      </p>
+      <div class="tool-list">
+        <div class="tool"><code>advise_jlr_uk_build</code><br>Guided UK buying adviser and recommendation flow.</div>
+        <div class="tool"><code>find_jlr_configurators</code><br>Find current model-line configurators and default prices.</div>
+        <div class="tool"><code>summarize_jlr_configuration</code><br>Summarise a selected build with price, highlights, specifications and media.</div>
+        <div class="tool"><code>compare_jlr_builds</code><br>Compare 2-4 builds by price, features and specifications.</div>
+        <div class="tool"><code>list_jlr_configurator_features</code><br>Search available models, engines, packs, colours, wheels and options.</div>
+        <div class="tool"><code>preview_jlr_selection_change</code><br>Explain what adding an option changes before accepting it.</div>
+        <div class="tool"><code>get_jlr_specs_and_standard_features</code><br>Retrieve WLTP, towing, performance, dimensions and standard equipment.</div>
+        <div class="tool"><code>get_jlr_feature_details</code><br>Inspect a specific configurator feature once identified.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What It Can And Cannot Do</h2>
+      <table class="comparison">
+        <thead>
+          <tr>
+            <th>Can do via MCP</th>
+            <th>Cannot do in this pilot</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Find UK Range Rover configurators and current default builds.</td>
+            <td>Check dealer stock, delivery dates or real-time retailer availability.</td>
+          </tr>
+          <tr>
+            <td>Compare Range Rover, Sport, Velar and Evoque using configurator data.</td>
+            <td>Quote finance, monthly payments, incentives, discounts or part exchange.</td>
+          </tr>
+          <tr>
+            <td>Show visible configurator prices where the public payload exposes them.</td>
+            <td>Access saved builds, order status, VIN data or private customer accounts.</td>
+          </tr>
+          <tr>
+            <td>Preview option dependencies, additions and removals.</td>
+            <td>Use external reviews, social opinion, reliability data or owner forums.</td>
+          </tr>
+          <tr>
+            <td>Return specs such as WLTP, towing, power, torque and acceleration.</td>
+            <td>Make final transaction claims or replace retailer consultation.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Current Example Outcomes</h2>
+      <p class="lead">
+        In live testing, a customer profile with a family of four, home charging, city and motorway use, high budget and a preference for quiet luxury led ChatGPT to compare two serious directions: full-size Range Rover Autobiography D350 for flagship luxury, and Range Rover Sport Autobiography P460e for plug-in hybrid convenience.
+      </p>
+      <div class="grid two">
+        <div class="card">
+          <h3>Flagship luxury route</h3>
+          <p><strong>Range Rover Autobiography D350</strong></p>
+          <p>Best aligned to quiet luxury, motorway refinement, family space and a "do not settle" brief.</p>
+        </div>
+        <div class="card">
+          <h3>Plug-in hybrid route</h3>
+          <p><strong>Range Rover Sport Autobiography P460e</strong></p>
+          <p>Best aligned to home charging, electric-feeling city use and a still-luxurious but sportier character.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Pilot Notes</h2>
+      <p class="lead">
+        This is a client-demo MCP, not a production customer system. The data boundary is intentionally narrow: public JLR configurator payloads only. A production path would add JLR-approved authentication, governance, monitoring and approved integrations for finance, lead capture, retailer handoff or stock availability.
+      </p>
+      <div class="band">
+        <strong>Recommended next step:</strong> run a JLR stakeholder walkthrough using the transcript below, then test three customer journeys: family luxury, company-car PHEV, and towing-focused rural use.
+      </div>
+    </section>
+
+    <section>
+      <h2>How JLR Can Test It In ChatGPT</h2>
+      <p class="lead">
+        The pilot is currently configured for no-auth testing so a small JLR team can try it quickly in ChatGPT. For wider sharing, the same MCP should be moved behind JLR-approved authentication.
+      </p>
+      <div class="setup-list">
+        <div class="setup-item">
+          <h3>Enable Developer Mode</h3>
+          <p>In ChatGPT, open Settings, then Connectors or Apps, and enable Developer Mode from the advanced settings area.</p>
+        </div>
+        <div class="setup-item">
+          <h3>Create a new MCP app</h3>
+          <p>Choose to create an app from a remote MCP server. Use the connector name <strong>JLR UK Configurator</strong>.</p>
+        </div>
+        <div class="setup-item">
+          <h3>Add the server URL</h3>
+          <p>Use <code>https://jlr-configurator-mcp.onrender.com/mcp</code> and select <strong>No authentication</strong> for this pilot.</p>
+        </div>
+        <div class="setup-item">
+          <h3>Start a fresh chat</h3>
+          <p>Ask: <em>"Use the JLR UK Configurator MCP. Help me choose the right Range Rover and ask what you need to know first."</em></p>
+        </div>
+      </div>
+      <div class="band">
+        <strong>Suggested test prompts:</strong><br>
+        "I have a high budget, a family of four, home charging and I want quiet luxury. Which Range Rover should I choose?"<br>
+        "Compare full-size Range Rover Autobiography D350 with Range Rover Sport P460e using only the MCP."<br>
+        "What options should I explore next for comfort, privacy and audio?"
+      </div>
+    </section>
+
+    <section>
+      <h2>Developer Handover</h2>
+      <p class="lead">
+        The working MCP source files have been packaged for review. The bundle contains the Node server, tool adapter, tests, Render deployment files and documentation used for the live pilot.
+      </p>
+      <div class="band">
+        <strong>Developer bundle:</strong> <code>jlr-configurator-mcp-dev-bundle.zip</code><br>
+        <span class="muted">Located in the same folder as this HTML file.</span>
+      </div>
+      <ul class="file-list">
+        <li><code>src/index.js</code><br>Entry point that selects HTTP or stdio transport.</li>
+        <li><code>src/httpServer.js</code><br>Remote MCP endpoint, health check, CORS and event-stream compatibility.</li>
+        <li><code>src/mcpProtocol.js</code><br>MCP initialisation, tool list, tool schemas and tool dispatch.</li>
+        <li><code>src/rangeRoverConfigurator.js</code><br>JLR configurator adapter, URL resolution, pricing, specs, comparisons and UK adviser logic.</li>
+        <li><code>src/stdioServer.js</code><br>Local stdio transport for MCP clients that do not use HTTP.</li>
+        <li><code>test/rangeRoverConfigurator.test.js</code><br>Unit and live smoke tests for markets, specs, prices, dependencies and adviser behaviour.</li>
+        <li><code>scripts/smoke-http-mcp.mjs</code><br>Simple remote MCP smoke test script.</li>
+        <li><code>package.json</code><br>Node package metadata and test command.</li>
+        <li><code>Dockerfile</code><br>Container definition for Render or another host.</li>
+        <li><code>render.yaml</code><br>Render Blueprint used for the live no-auth pilot.</li>
+        <li><code>README.md</code><br>Developer overview, tool list and local run notes.</li>
+        <li><code>DEPLOYMENT.md</code><br>Hosting and ChatGPT test checklist.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Example ChatGPT Conversation</h2>
+      <p class="lead">
+        The transcript below shows how the MCP can support a customer-facing Range Rover choice conversation while staying grounded in configurator data.
+      </p>
+
+      <div class="chat">
+        <div class="message user">
+          <div class="speaker">User</div>
+          <p>i need help finding out which range rover model to choose</p>
+        </div>
+
+        <div class="message tool">Called tool</div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p>I can help narrow it down. To recommend the right Range Rover, I need a bit of buying context:</p>
+          <ul>
+            <li>What is your rough budget, or are you comparing monthly affordability?</li>
+            <li>How many people do you regularly carry? Do you need a large boot or occasional 7 seats?</li>
+            <li>What is the main use: city driving, motorway miles, family trips, towing, commuting, or mixed?</li>
+            <li>Can you charge at home or work, or would you prefer petrol/diesel simplicity?</li>
+            <li>What matters most: comfort, quiet luxury, performance, lower running costs, tech, towing, or compact size?</li>
+          </ul>
+          <p>As a starting point: Range Rover Sport is usually the best all-rounder, full-size Range Rover is the luxury choice, Velar is sleeker and more urban, and Evoque is the compact/city-friendly option.</p>
+        </div>
+
+        <div class="message user">
+          <div class="speaker">User</div>
+          <p>Family of 4, i can charge at home and i love quiet luxury. Its for both city and motorway driving. I have a high budget as we dont want to settle for less.</p>
+        </div>
+
+        <div class="message tool">Called tool</div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p>Given your priorities, I am treating this less like "best value" and more like "which model delivers the most serene family-luxury experience without compromise."</p>
+        </div>
+
+        <div class="message tool">Looked for available tools</div>
+        <div class="message tool">Called tool</div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p>I have found one important nuance: the flagship Range Rover configurator I checked is currently showing diesel mild-hybrid engines for the full-size Range Rover, while the plug-in hybrid choice appears in the Sport and Velar alternatives.</p>
+          <p>The configurator data shows the flagship Range Rover trim ladder currently includes SE, Westminster Edition, HSE, and Autobiography; for the base full-size Range Rover configuration it is surfacing D300 and D350 diesel mild-hybrid engines rather than a plug-in hybrid option.</p>
+        </div>
+
+        <div class="message tool">Called tool</div>
+        <div class="message tool">Called tool</div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p><strong>My recommendation: full-size Range Rover Autobiography, ideally with the D350 diesel mild hybrid in the UK configurator data I checked.</strong></p>
+          <p>For your use case, I would not put you in an Evoque or Velar. They are stylish, but they are not the "do not settle" answer for a family of four who wants quiet luxury. I would also only choose Range Rover Sport P460e if plug-in hybrid driving is more important to you than the most serene, flagship cabin.</p>
+          <p><strong>Best choice for you: Range Rover Autobiography D350</strong></p>
+          <ul>
+            <li>Most luxurious and quiet-feeling Range Rover choice among the core models.</li>
+            <li>Better suited to quiet luxury than the Sport, Velar, or Evoque.</li>
+            <li>Strong for motorway driving, where the D350 diesel mild hybrid makes more sense than a plug-in hybrid if you do a lot of longer trips.</li>
+            <li>Family of four fits easily without needing a compromised 7-seat setup.</li>
+            <li>Autobiography brings the cabin expected from a high-budget luxury brief: semi-aniline leather, high-end seat comfort, ventilated rear seats, panoramic roof, and Meridian Signature audio in the checked configuration summary.</li>
+          </ul>
+          <p><strong>The caveat:</strong> home charging usually points toward a PHEV. The MCP found the full-size Range Rover surfacing D300 and D350 diesel mild-hybrid options, while Range Rover Sport SE showed a P460e plug-in hybrid option at £91,910.</p>
+          <table>
+            <tr><th>Priority</th><th>Choose</th></tr>
+            <tr><td>Ultimate quiet luxury, prestige, comfort</td><td>Range Rover Autobiography D350</td></tr>
+            <tr><td>More electric city driving and lower-emission daily use</td><td>Range Rover Sport P460e</td></tr>
+            <tr><td>Sleek design, less expensive, more urban</td><td>Velar P400e</td></tr>
+            <tr><td>Compact city SUV</td><td>Evoque</td></tr>
+          </table>
+          <p><strong>Final pick:</strong> full-size Range Rover Autobiography, not the Sport, unless plug-in hybrid driving every day is the stronger priority.</p>
+        </div>
+
+        <div class="message user">
+          <div class="speaker">User</div>
+          <p>In what ways can you use solely the MCP to help me here? It looked like you started web browsing....</p>
+        </div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p>I can keep this entirely inside the JLR Configurator MCP: no general web search, no external reviews, no public browsing beyond what that MCP itself exposes from configurator data.</p>
+          <p>You are right to ask. I can keep this entirely inside the JLR configurator MCP from here, without separate web browsing, and use only configurator-derived data for recommendations.</p>
+        </div>
+
+        <div class="message tool">Called tool</div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p>Yes, we can do this solely through the JLR Configurator MCP. To be clear: I did not use general web search for the recommendation. I used the JLR Configurator MCP, which itself resolves public JLR configurator payloads. That can look web-like, but it is constrained to configurator data rather than open browsing.</p>
+          <table>
+            <tr><th>What I can do via MCP</th><th>How it helps your Range Rover choice</th></tr>
+            <tr><td>Find current UK Range Rover configurators</td><td>Confirm which model lines are available: Range Rover, Sport, Velar, Evoque.</td></tr>
+            <tr><td>Compare base prices and default builds</td><td>The MCP currently shows Range Rover from £107,530, Sport from £91,910, Velar from £65,450, and Evoque from £44,430.</td></tr>
+            <tr><td>List available trims and engines</td><td>For example, full-size Range Rover surfaced SE, Westminster Edition, HSE, Autobiography and diesel mild hybrid options.</td></tr>
+            <tr><td>Summarise a specific build</td><td>Summarise paint, wheels, trim, seats, audio, roof, towing, and price where exposed.</td></tr>
+            <tr><td>Compare 2-4 builds</td><td>For example: Range Rover Autobiography D350 vs Range Rover Sport P460e vs Velar P400e.</td></tr>
+            <tr><td>Check standard features and specifications</td><td>Towing, acceleration, WLTP/CO₂, power, torque, dimensions, equipment.</td></tr>
+            <tr><td>Preview option changes</td><td>Check what an option adds/removes and whether it triggers dependencies.</td></tr>
+            <tr><td>Produce a configurator link</td><td>Give the exact build URL from configurator data once a direction is chosen.</td></tr>
+          </table>
+          <p><strong>What I cannot do using only the MCP:</strong> check dealer stock, delivery dates, finance/monthly payments, incentives, external reviews, resale values or insurance quotes.</p>
+          <p>For your profile, the MCP-only path I would suggest next is: compare full-size Range Rover Autobiography D350 against Range Rover Sport P460e, because that is the real decision: maximum flagship quiet luxury versus plug-in hybrid convenience.</p>
+        </div>
+
+        <div class="message user">
+          <div class="speaker">User</div>
+          <p>Yes compare! Use only the MCP to do this</p>
+        </div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p>I will keep this strictly to the MCP and compare the real configurator builds, not external reviews or general web data. I am going to check the exact Sport trims/engines first so the comparison is like-for-like.</p>
+          <p>I will keep this MCP-only and compare the two serious candidates: flagship Range Rover Autobiography D350 versus Range Rover Sport P460e. I will use configurator feature data and the MCP comparison tool only.</p>
+        </div>
+
+        <div class="message tool">Called tool</div>
+        <div class="message tool">Called tool</div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p>The Sport side is clearer now: the MCP shows a Range Rover Sport Autobiography trim, and its included product path is the P460e Petrol Plug-in Hybrid. I am checking whether the full-size Autobiography can validly pair with D350 or whether the configurator wants D300 there.</p>
+        </div>
+
+        <div class="message tool">Called tool</div>
+        <div class="message tool">Called tool</div>
+        <div class="message tool">Called tool</div>
+        <div class="message tool">Called tool</div>
+        <div class="message tool">Called tool</div>
+        <div class="message tool">Called tool</div>
+
+        <div class="message assistant">
+          <div class="speaker">Assistant</div>
+          <p>Using only the JLR Configurator MCP, here is the comparison I would use for your decision.</p>
+          <table>
+            <tr><th></th><th>Range Rover Autobiography D350</th><th>Range Rover Sport Autobiography P460e</th></tr>
+            <tr><td>Vehicle line</td><td>Full-size Range Rover</td><td>Range Rover Sport</td></tr>
+            <tr><td>Trim</td><td>Autobiography</td><td>Autobiography</td></tr>
+            <tr><td>Powertrain</td><td>D350 Diesel Mild Hybrid</td><td>P460e Petrol Plug-in Hybrid</td></tr>
+            <tr><td>Engine description from MCP</td><td>3.0L 6-cylinder 350PS diesel MHEV AWD</td><td>3.0L 6-cylinder 460PS petrol PHEV AWD</td></tr>
+            <tr><td>Home charging benefit</td><td>Low</td><td>High</td></tr>
+            <tr><td>Best MCP-aligned use case</td><td>Quiet flagship luxury, motorway refinement</td><td>Luxury plus plug-in city driving</td></tr>
+            <tr><td>Specific build price</td><td>Not exposed by MCP for this selected Autobiography build</td><td>Not exposed by MCP for this selected Autobiography build</td></tr>
+            <tr><td>Default model-line price surfaced by MCP</td><td>Range Rover default from £107,530</td><td>Sport default from £91,910</td></tr>
+          </table>
+          <table>
+            <tr><th></th><th>Range Rover Autobiography D350</th><th>Range Rover Sport Autobiography P460e</th></tr>
+            <tr><td>Interior trim</td><td>Ebony perforated Semi-Aniline leather seats with Ebony interior</td><td>Ebony perforated Semi-Aniline leather seats with Ebony interior</td></tr>
+            <tr><td>Front/rear seats</td><td>24-way heated and cooled massage front seats, power recline heated and ventilated rear seats</td><td>22-way heated and ventilated massage front seats, heated and ventilated power recline rear seats</td></tr>
+            <tr><td>Audio surfaced</td><td>Meridian Signature Sound System</td><td>Not surfaced in the Sport summary returned by the MCP</td></tr>
+            <tr><td>Roof</td><td>Body-coloured roof</td><td>Black contrast roof</td></tr>
+            <tr><td>Panoramic roof</td><td>Sliding panoramic roof</td><td>Sliding panoramic roof</td></tr>
+            <tr><td>Glass</td><td>Standard glass in selected summary</td><td>Privacy glass in selected summary</td></tr>
+          </table>
+          <p><strong>My MCP-only interpretation:</strong> for your stated priorities, the decision is quiet flagship luxury versus plug-in hybrid city convenience.</p>
+          <p><strong>Choose Range Rover Autobiography D350 if you want the best luxury experience.</strong> The MCP summary supports it as the more no-compromise quiet-luxury build: full-size Range Rover, Autobiography trim, 24-way massage seats, ventilated rear seating, semi-aniline leather, sliding panoramic roof, and Meridian Signature Sound surfaced in the selected build.</p>
+          <p><strong>Choose Range Rover Sport Autobiography P460e if home charging is the deciding factor.</strong> This gives you the plug-in hybrid powertrain, stronger headline power, and a still-luxurious Autobiography cabin. But it is the sport-luxury answer, not the pure flagship-luxury answer.</p>
+          <p><strong>Final recommendation:</strong> Range Rover Autobiography D350. The Sport P460e is tempting because you can charge at home, but your strongest stated preference was quiet luxury and not settling. Based on the MCP data, the full-size Range Rover Autobiography is the better match for that brief.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Prepared as a pilot presentation artifact. The MCP uses public configurator payloads only and is intended for client demonstration, not production deployment.
+    </footer>
+  </main>
+</body>
+</html>
