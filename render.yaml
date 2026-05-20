@@ -2,7 +2,7 @@ services:
   - type: web
     name: jlr-configurator-mcp
     runtime: docker
-    plan: starter
+    plan: free
     healthCheckPath: /health
     envVars:
       - key: MCP_TRANSPORT
@@ -16,4 +16,3 @@ services:
       # so no-auth is acceptable for a short-lived demo endpoint.
       - key: ALLOW_UNAUTHENTICATED_HTTP
         value: "1"
-
