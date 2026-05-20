@@ -29,6 +29,33 @@
       line-height: 1.5;
     }
 
+    .brandbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+      padding: 0 32px;
+      background: #050505;
+      color: #f4f1ea;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .brandnav {
+      display: flex;
+      gap: 26px;
+      color: #c7c2b8;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
     .topbar {
       min-height: 76vh;
       display: grid;
@@ -76,6 +103,34 @@
       margin-top: 28px;
     }
 
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid #fff;
+      background: #fff;
+      color: #111;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .button.secondary {
+      background: transparent;
+      color: #fff;
+    }
+
     .pill {
       display: inline-flex;
       align-items: center;
@@ -104,12 +159,14 @@
       font-size: 32px;
       line-height: 1.1;
       letter-spacing: 0;
+      text-transform: uppercase;
     }
 
     h3 {
       margin: 0 0 10px;
       font-size: 18px;
       letter-spacing: 0;
+      text-transform: uppercase;
     }
 
     p {
@@ -139,6 +196,28 @@
       border: 1px solid var(--line);
       border-radius: 2px;
       background: var(--panel);
+    }
+
+    .feature-band {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 34px;
+      align-items: center;
+      margin-top: 28px;
+      padding: 34px;
+      background: #111;
+      color: #f5f2eb;
+    }
+
+    .feature-band p {
+      color: #cfcac0;
+    }
+
+    .feature-band img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      display: block;
     }
 
     .card p {
@@ -382,6 +461,18 @@
     }
 
     @media (max-width: 840px) {
+      .brandbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding: 18px 20px;
+      }
+
+      .brandnav {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
       .topbar {
         min-height: 68vh;
         padding: 34px 20px;
@@ -396,7 +487,8 @@
       .tool-list,
       .steps,
       .setup-list,
-      .file-list {
+      .file-list,
+      .feature-band {
         grid-template-columns: 1fr;
       }
 
@@ -408,6 +500,14 @@
   </style>
 </head>
 <body>
+  <div class="brandbar">
+    <div class="brand">RANGE ROVER</div>
+    <div class="brandnav">
+      <span>Configurator MCP</span>
+      <span>UK pilot</span>
+      <span>Client demonstration</span>
+    </div>
+  </div>
   <header class="topbar">
     <div class="hero">
       <p class="eyebrow">Client demo MCP for JLR UK</p>
@@ -421,11 +521,15 @@
         <span class="pill">No-auth test mode</span>
         <span class="pill">Public configurator data only</span>
       </div>
+      <div class="actions">
+        <a class="button" href="#chatgpt-setup">Test in ChatGPT</a>
+        <a class="button secondary" href="#developer-handover">Developer handover</a>
+      </div>
     </div>
   </header>
 
   <main>
-    <section>
+    <section id="chatgpt-setup">
       <span class="status"><span class="dot"></span> Working prototype</span>
       <h2 style="margin-top: 18px;">What This MCP Does</h2>
       <p class="lead">
@@ -450,11 +554,20 @@
       </div>
     </section>
 
-    <section>
+    <section id="developer-handover">
       <h2>Why It Matters For JLR</h2>
       <p class="lead">
         Configurators are rich, but they can be hard for customers to interpret. This MCP lets ChatGPT become a guided product specialist that can reason from JLR's own configurator data whilst staying inside an approved, bounded data source.
       </p>
+      <div class="feature-band">
+        <div>
+          <h3>From build data to buying confidence</h3>
+          <p>
+            The pilot follows the way a customer naturally thinks: model line, use case, charging access, budget, comfort, performance and equipment. ChatGPT handles the conversation, while the MCP supplies the official configurator facts.
+          </p>
+        </div>
+        <img alt="Range Rover configurator visual" src="https://assets.config.landrover.com/lr/l460/k27/inkf/base/inbse_l460_k27_a-swb_a-std-se_n-301mx_n-401ae_gl_1.jpg?v=4culc">
+      </div>
       <div class="grid">
         <div class="card">
           <h3>Customer guidance</h3>
